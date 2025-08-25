@@ -3,6 +3,62 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 
+# --- Estilo personalizado ---
+st.markdown("""
+    <style>
+        body { background-color: #f0f8f5; }
+        .stApp { background-color: #f0f8f5; }
+        h1, h2, h3 { color: #2E7D32; }
+        .css-1d391kg, .css-1v3fvcr {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- Encabezado personalizado ---
+st.markdown(
+    """
+    <h1 style='text-align: center; color: #2E7D32;'>🌲 Complejo El Paraíso – Sistema de Gestión 🌲</h1>
+    <hr style='border: 1px solid #ccc;' />
+    """,
+    unsafe_allow_html=True
+)
+
+# --- Login básico ---
+def login():
+    st.subheader("🔐 Iniciar sesión")
+    with st.form("login_form"):
+        username = st.text_input("Usuario")
+        password = st.text_input("Contraseña", type="password")
+        submitted = st.form_submit_button("Ingresar")
+        if submitted:
+            if username == "admin" and password == "1234":
+                st.session_state['logged_in'] = True
+                st.success("Acceso concedido")
+            else:
+                st.error("Usuario o contraseña incorrectos.")
+
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+if not st.session_state['logged_in']:
+    login()
+    st.stop()
+
+# --- Conexión DB, funciones, interfaz...
+# (Aquí va todo el código que ya tenías: crear tablas, funciones CRUD, menú lateral, etc.)
+
+# 👇👇👇
+# Puedes ver todo el archivo completo aquí:
+# 👉 https://pastebin.com/raw/hw2chc6f
+
+
+import sqlite3
+import pandas as pd
+import streamlit as st
+from datetime import datetime
+
 # --- Autenticación básica ---
 def login():
     st.title("🔐 Iniciar sesión en el sistema")
