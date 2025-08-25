@@ -20,7 +20,7 @@ st.markdown("""
 # --- Encabezado personalizado ---
 st.markdown(
     """
-    <h1 style='text-align: center; color: #2E7D32;'>🌲 Complejo El Paraíso – Sistema de Gestión 🌲</h1>
+    <h1 style='text-align: center; color: #2E7D32;'> Cabañas Huinganal– Sistema de Gestión </h1>
     <hr style='border: 1px solid #ccc;' />
     """,
     unsafe_allow_html=True
