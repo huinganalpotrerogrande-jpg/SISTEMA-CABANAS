@@ -3,6 +3,35 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 
+# --- Autenticación básica ---
+def login():
+    st.title("🔐 Iniciar sesión en el sistema")
+    
+    with st.form("login_form"):
+        username = st.text_input("Usuario")
+        password = st.text_input("Contraseña", type="password")
+        submitted = st.form_submit_button("Ingresar")
+        
+        if submitted:
+            if username == "admin" and password == "1234":
+                st.session_state['logged_in'] = True
+                st.success("Acceso concedido")
+            else:
+                st.error("Usuario o contraseña incorrectos.")
+
+# --- Control de acceso ---
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+
+if not st.session_state['logged_in']:
+    login()
+    st.stop()
+
+import sqlite3
+import pandas as pd
+import streamlit as st
+from datetime import datetime
+
 # --- Conexión a base de datos SQLite ---
 conn = sqlite3.connect("complejo_cabanas.db", check_same_thread=False)
 cursor = conn.cursor()
