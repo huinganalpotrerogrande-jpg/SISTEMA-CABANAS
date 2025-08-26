@@ -1,3 +1,14 @@
+def obtener_reservas():
+    cursor.execute('''
+        SELECT reservas.id, huespedes.nombre AS huesped, cabanas.nombre AS cabana
+        FROM reservas
+        JOIN huespedes ON reservas.huesped_id = huespedes.id
+        JOIN cabanas ON reservas.cabana_id = cabanas.id
+    ''')
+    return cursor.fetchall()
+
+
+
 reservas = obtener_reservas()
 reserva_seleccionada = st.selectbox(
     "Seleccionar reserva",
