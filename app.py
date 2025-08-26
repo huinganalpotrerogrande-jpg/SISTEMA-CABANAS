@@ -1,3 +1,51 @@
+import sqlite3
+import pandas as pd
+import streamlit as st
+from datetime import datetime, timedelta
+
+# --- Conexión a base de datos SQLite ---
+conn = sqlite3.connect("complejo_cabanas.db", check_same_thread=False)
+cursor = conn.cursor()
+
+# --- Creación de tablas ---
+def crear_tablas():
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS cabanas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        capacidad INTEGER NOT NULL
+    )''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS huespedes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        documento TEXT NOT NULL,
+        telefono TEXT
+    )''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS reservas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        huesped_id INTEGER,
+        cabana_id INTEGER,
+        check_in TEXT,
+        check_out TEXT,
+        FOREIGN KEY(huesped_id) REFERENCES huespedes(id),
+        FOREIGN KEY(cabana_id) REFERENCES cabanas(id)
+    )''')
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS pagos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reserva_id INTEGER,
+        monto REAL,
+        metodo TEXT,
+        fecha TEXT,
+        FOREIGN KEY(reserva_id) REFERENCES reservas(id)
+    )''')
+    conn.commit()
+
+crear_tablas()
+
+
 def disponibilidad_cabanas(fecha_inicio, fecha_fin):
     cursor.execute("SELECT id, nombre FROM cabanas")
     cabanas = cursor.fetchall()
