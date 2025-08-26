@@ -289,13 +289,30 @@ elif menu == "Agregar Cabaña":
 
 elif menu == "Hacer Reserva":
     st.subheader("📅 Crear nueva reserva")
+
     huespedes = obtener_huespedes()
     cabanas = obtener_cabanas()
+
     if huespedes and cabanas:
         huesped = st.selectbox("Huésped", huespedes, format_func=lambda x: f"{x[1]} (ID {x[0]})")
         cabana = st.selectbox("Cabaña", cabanas, format_func=lambda x: f"{x[1]} (ID {x[0]})")
-        check_in = st.date_input("Fecha de ingreso")
-        check_out = st.date_input("Fecha de salida")
+
+        # Mostrar disponibilidad de la cabaña seleccionada
+        hoy = datetime.now().date()
+        rango_inicio = hoy
+        rango_fin = hoy + pd.Timedelta(days=30)
+
+        tabla = disponibilidad_cabanas(rango_inicio, rango_fin)
+
+        st.markdown(f"🗓️ <b>Disponibilidad de {cabana[1]}</b> (próximos 30 días):", unsafe_allow_html=True)
+        st.dataframe(tabla.loc[[cabana[1]]].style.applymap(
+            lambda val: "background-color: #f44336; color: white" if val == "❌"
+                        else "background-color: #c8e6c9; color: black"
+        ))
+
+        check_in = st.date_input("Fecha de ingreso", min_value=hoy)
+        check_out = st.date_input("Fecha de salida", min_value=check_in + pd.Timedelta(days=1))
+
         if st.button("Reservar"):
             if check_in < check_out:
                 ok = hacer_reserva(huesped[0], cabana[0], str(check_in), str(check_out))
@@ -307,6 +324,8 @@ elif menu == "Hacer Reserva":
                 st.error("La fecha de salida debe ser posterior a la de ingreso.")
     else:
         st.warning("Necesitas al menos un huésped y una cabaña para hacer una reserva.")
+
+
 
 elif menu == "Registrar Pago":
     st.subheader("💳 Registrar pago")
