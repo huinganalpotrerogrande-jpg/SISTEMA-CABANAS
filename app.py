@@ -1,3 +1,7 @@
+def reserva_existe(reserva_id):
+    cursor.execute("SELECT 1 FROM reservas WHERE id = ?", (reserva_id,))
+    return cursor.fetchone() is not None
+
 import sqlite3
 import pandas as pd
 import streamlit as st
