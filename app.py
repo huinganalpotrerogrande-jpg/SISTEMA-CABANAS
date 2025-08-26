@@ -1,3 +1,30 @@
+def disponibilidad_cabanas(fecha_inicio, fecha_fin):
+    cursor.execute("SELECT id, nombre FROM cabanas")
+    cabanas = cursor.fetchall()
+
+    fechas = pd.date_range(start=fecha_inicio, end=fecha_fin)
+    disponibilidad = pd.DataFrame(index=[c[1] for c in cabanas], columns=fechas.strftime('%d/%m'))
+    disponibilidad[:] = "✅"
+
+    for cabana_id, cabana_nombre in cabanas:
+        cursor.execute('''
+            SELECT check_in, check_out FROM reservas
+            WHERE cabana_id = ?
+        ''', (cabana_id,))
+        reservas = cursor.fetchall()
+
+        for check_in, check_out in reservas:
+            r_inicio = pd.to_datetime(check_in)
+            r_fin = pd.to_datetime(check_out) - pd.Timedelta(days=1)
+            ocupadas = pd.date_range(start=r_inicio, end=r_fin)
+            for fecha in ocupadas:
+                col = fecha.strftime('%d/%m')
+                if col in disponibilidad.columns:
+                    disponibilidad.loc[cabana_nombre, col] = "❌"
+
+    return disponibilidad
+
+
 import sqlite3
 import pandas as pd
 import streamlit as st
@@ -63,8 +90,9 @@ def registrar_pago(reserva_id, monto, metodo):
                    (reserva_id, monto, metodo, fecha))
     conn.commit()
 
-# Dentro de la sección "Hacer Reserva"
-if menu == "Hacer Reserva":
+from datetime import datetime, timedelta
+
+elif menu == "Hacer Reserva":
     st.subheader("📅 Crear nueva reserva")
 
     huespedes = obtener_huespedes()
@@ -78,47 +106,53 @@ if menu == "Hacer Reserva":
         rango_inicio = hoy
         rango_fin = hoy + timedelta(days=30)
 
+        # 🔁 Asegurate que esta función esté definida en tu código
         tabla = disponibilidad_cabanas(rango_inicio, rango_fin)
 
-        st.markdown(f"**Disponibilidad de {cabana[1]} (próximos 30 días)**")
-        
-        # Estilo claro
-        def color_cell(val):
-            return (
-                'background-color: red; color: white; font-weight: bold;'
-                if val == "❌" else
-                'background-color: lightgreen; color: black;'
-            )
+        # 💡 Mostrar solo la fila correspondiente a la cabaña elegida
+        st.markdown(f"**🗓️ Disponibilidad de {cabana[1]} (próximos 30 días)**")
 
-        styled = tabla.loc[[cabana[1]]].style.applymap(color_cell)
+        def resaltar_celda(val):
+            if val == "❌":
+                return 'background-color: red; color: white; font-weight: bold;'
+            elif val == "✅":
+                return 'background-color: lightgreen; color: black;'
+            else:
+                return ''
 
-        st.dataframe(styled, use_container_width=True, height=100)
+        st.dataframe(
+            tabla.loc[[cabana[1]]].style.applymap(resaltar_celda),
+            use_container_width=True
+        )
 
         check_in = st.date_input("Fecha de ingreso", min_value=hoy)
         check_out = st.date_input("Fecha de salida", min_value=check_in + timedelta(days=1))
 
-        # Validación automática de conflicto antes del botón
-        conflictos = False
-        if check_in and check_out and check_in < check_out:
-            for fechado in pd.date_range(start=check_in, end=check_out - timedelta(days=1)):
-                s = fechado.strftime("%d/%m")
-                if tabla.loc[cabana[1], s] == "❌":
-                    conflictos = True
+        # Validar disponibilidad del rango seleccionado
+        conflicto = False
+        if check_in < check_out:
+            dias = pd.date_range(start=check_in, end=check_out - timedelta(days=1))
+            for dia in dias:
+                col = dia.strftime('%d/%m')
+                if col in tabla.columns and tabla.loc[cabana[1], col] == "❌":
+                    conflicto = True
                     break
 
-            if conflictos:
-                st.error("⚠️ El rango seleccionado incluye días ocupados. Cambialo o revisá la tabla.")
+        if conflicto:
+            st.warning("⚠️ El rango seleccionado incluye días ocupados. Cambia las fechas.")
 
         if st.button("Reservar"):
-            if conflictos:
-                st.error("No se puede reservar: fechas ocupadas.")
-            elif hacer_reserva(huesped[0], cabana[0], str(check_in), str(check_out)):
-                st.success("Reserva registrada correctamente.")
+            if conflicto:
+                st.error("No se puede reservar: incluye días ocupados.")
             else:
-                st.error("Error al registrar la reserva.")
-
+                ok = hacer_reserva(huesped[0], cabana[0], str(check_in), str(check_out))
+                if ok:
+                    st.success("✅ Reserva registrada.")
+                else:
+                    st.error("Error al registrar la reserva.")
     else:
-        st.warning("Necesitás al menos un huésped y una cabaña para hacer una reserva.")
+        st.warning("Primero agregá al menos un huésped y una cabaña.")
+
 
 
 def disponibilidad_cabanas(fecha_inicio, fecha_fin):
