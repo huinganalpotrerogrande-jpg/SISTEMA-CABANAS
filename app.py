@@ -214,11 +214,31 @@ def hacer_reserva(huesped_id, cabana_id, check_in, check_out):
     conn.commit()
     return True
 
-def registrar_pago(reserva_id, monto, metodo):
-    fecha = datetime.now().strftime('%Y-%m-%d')
-    cursor.execute("INSERT INTO pagos (reserva_id, monto, metodo, fecha) VALUES (?, ?, ?, ?)",
-                   (reserva_id, monto, metodo, fecha))
-    conn.commit()
+elif menu == "Registrar Pago":
+    st.subheader("💳 Registrar pago")
+
+    reservas = obtener_reservas()
+
+    if reservas:
+        reserva_seleccionada = st.selectbox(
+            "Seleccionar reserva",
+            reservas,
+            format_func=lambda x: f"ID {x[0]} - {x[1]} en {x[2]}"
+        )
+
+        monto = st.number_input("Monto", min_value=0.0, step=0.01)
+        metodo = st.selectbox("Método de pago", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
+
+        if st.button("Registrar Pago"):
+            if monto > 0:
+                reserva_id = reserva_seleccionada[0]
+                registrar_pago(reserva_id, monto, metodo)
+                st.success("Pago registrado.")
+            else:
+                st.error("El monto debe ser mayor a cero.")
+    else:
+        st.warning("No hay reservas registradas.")
+
 
 def mostrar_reservas():
     query = '''
