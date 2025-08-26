@@ -1,3 +1,13 @@
+reservas = obtener_reservas()
+reserva_seleccionada = st.selectbox(
+    "Seleccionar reserva",
+    reservas,
+    format_func=lambda x: f"ID {x[0]} - {x[1]} en {x[2]}"
+)
+
+reserva_id = reserva_seleccionada[0]
+
+
 def obtener_reservas():
     cursor.execute('''
         SELECT reservas.id, huespedes.nombre, cabanas.nombre
