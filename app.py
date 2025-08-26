@@ -251,12 +251,17 @@ elif menu == "Registrar Pago":
     reserva_id = st.number_input("ID de reserva", min_value=1, step=1)
     monto = st.number_input("Monto", min_value=0.0, step=0.01)
     metodo = st.selectbox("Método de pago", ["Efectivo", "Tarjeta", "Transferencia", "Otro"])
+
     if st.button("Registrar Pago"):
         if monto > 0:
-            registrar_pago(reserva_id, monto, metodo)
-            st.success("Pago registrado.")
+            if reserva_existe(reserva_id):
+                registrar_pago(reserva_id, monto, metodo)
+                st.success("Pago registrado.")
+            else:
+                st.error("La reserva no existe. Verifica el ID.")
         else:
             st.error("El monto debe ser mayor a cero.")
+
 
 elif menu == "Ver Reservas":
     st.subheader("📋 Reservas")
