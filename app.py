@@ -92,6 +92,8 @@ def registrar_pago(reserva_id, monto, metodo):
 
 from datetime import datetime, timedelta
 
+from datetime import datetime, timedelta
+
 elif menu == "Hacer Reserva":
     st.subheader("📅 Crear nueva reserva")
 
@@ -106,10 +108,9 @@ elif menu == "Hacer Reserva":
         rango_inicio = hoy
         rango_fin = hoy + timedelta(days=30)
 
-        # 🔁 Asegurate que esta función esté definida en tu código
+        # Mostrar tabla de disponibilidad
         tabla = disponibilidad_cabanas(rango_inicio, rango_fin)
 
-        # 💡 Mostrar solo la fila correspondiente a la cabaña elegida
         st.markdown(f"**🗓️ Disponibilidad de {cabana[1]} (próximos 30 días)**")
 
         def resaltar_celda(val):
@@ -117,18 +118,15 @@ elif menu == "Hacer Reserva":
                 return 'background-color: red; color: white; font-weight: bold;'
             elif val == "✅":
                 return 'background-color: lightgreen; color: black;'
-            else:
-                return ''
+            return ''
 
-        st.dataframe(
-            tabla.loc[[cabana[1]]].style.applymap(resaltar_celda),
-            use_container_width=True
-        )
+        styled_table = tabla.loc[[cabana[1]]].style.applymap(resaltar_celda)
+        st.table(styled_table)
 
         check_in = st.date_input("Fecha de ingreso", min_value=hoy)
         check_out = st.date_input("Fecha de salida", min_value=check_in + timedelta(days=1))
 
-        # Validar disponibilidad del rango seleccionado
+        # Verificar conflicto
         conflicto = False
         if check_in < check_out:
             dias = pd.date_range(start=check_in, end=check_out - timedelta(days=1))
@@ -139,7 +137,7 @@ elif menu == "Hacer Reserva":
                     break
 
         if conflicto:
-            st.warning("⚠️ El rango seleccionado incluye días ocupados. Cambia las fechas.")
+            st.warning("⚠️ El rango seleccionado incluye días ocupados.")
 
         if st.button("Reservar"):
             if conflicto:
@@ -151,7 +149,8 @@ elif menu == "Hacer Reserva":
                 else:
                     st.error("Error al registrar la reserva.")
     else:
-        st.warning("Primero agregá al menos un huésped y una cabaña.")
+        st.warning("Necesitas al menos un huésped y una cabaña para hacer una reserva.")
+
 
 
 
