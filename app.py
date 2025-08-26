@@ -1,3 +1,13 @@
+def huesped_existe(huesped_id):
+    cursor.execute("SELECT 1 FROM huespedes WHERE id = ?", (huesped_id,))
+    return cursor.fetchone() is not None
+
+def cabana_existe(cabana_id):
+    cursor.execute("SELECT 1 FROM cabanas WHERE id = ?", (cabana_id,))
+    return cursor.fetchone() is not None
+
+
+
 def reserva_existe(reserva_id):
     cursor.execute("SELECT 1 FROM reservas WHERE id = ?", (reserva_id,))
     return cursor.fetchone() is not None
