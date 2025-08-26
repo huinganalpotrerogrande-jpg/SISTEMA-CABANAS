@@ -1,3 +1,29 @@
+def borrar_cabana(cabana_id):
+    # Antes de borrar, asegurarse que no tenga reservas para evitar errores
+    cursor.execute("SELECT COUNT(*) FROM reservas WHERE cabana_id = ?", (cabana_id,))
+    count = cursor.fetchone()[0]
+    if count > 0:
+        return False, "No se puede borrar la cabaña porque tiene reservas activas."
+    
+    cursor.execute("DELETE FROM cabanas WHERE id = ?", (cabana_id,))
+    conn.commit()
+    return True, "Cabaña borrada exitosamente."
+
+if menu == "Borrar Cabaña":
+    st.subheader("🗑️ Borrar Cabaña")
+    cabanas = obtener_cabanas()
+    if not cabanas:
+        st.warning("No hay cabañas para borrar.")
+    else:
+        cabana = st.selectbox("Selecciona la cabaña a borrar", cabanas, format_func=lambda x: f"{x[1]} (ID {x[0]})")
+        if st.button("Borrar Cabaña"):
+            ok, msg = borrar_cabana(cabana[0])
+            if ok:
+                st.success(msg)
+            else:
+                st.error(msg)
+
+
 import sqlite3
 import pandas as pd
 import streamlit as st
