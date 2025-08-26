@@ -1,3 +1,32 @@
+def disponibilidad_cabanas(fecha_inicio, fecha_fin):
+    cursor.execute("SELECT id, nombre FROM cabanas")
+    cabanas = cursor.fetchall()
+
+    fechas = pd.date_range(start=fecha_inicio, end=fecha_fin)
+    disponibilidad = pd.DataFrame(index=[c[1] for c in cabanas], columns=fechas.strftime('%d/%m'))
+    disponibilidad[:] = "✅"
+
+    for cabana_id, cabana_nombre in cabanas:
+        cursor.execute('''
+            SELECT check_in, check_out FROM reservas
+            WHERE cabana_id = ?
+        ''', (cabana_id,))
+        reservas = cursor.fetchall()
+
+        for check_in, check_out in reservas:
+            r_inicio = pd.to_datetime(check_in)
+            r_fin = pd.to_datetime(check_out) - pd.Timedelta(days=1)
+            ocupadas = pd.date_range(start=r_inicio, end=r_fin)
+            for fecha in ocupadas:
+                col = fecha.strftime('%d/%m')
+                if col in disponibilidad.columns:
+                    disponibilidad.loc[cabana_nombre, col] = "❌"
+    
+    return disponibilidad
+
+
+
+
 def obtener_reservas():
     cursor.execute('''
         SELECT reservas.id, huespedes.nombre AS huesped, cabanas.nombre AS cabana
