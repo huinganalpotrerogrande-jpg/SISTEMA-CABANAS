@@ -1,3 +1,14 @@
+def obtener_reservas():
+    cursor.execute('''
+        SELECT reservas.id, huespedes.nombre, cabanas.nombre
+        FROM reservas
+        JOIN huespedes ON reservas.huesped_id = huespedes.id
+        JOIN cabanas ON reservas.cabana_id = cabanas.id
+    ''')
+    return cursor.fetchall()
+
+
+
 def huesped_existe(huesped_id):
     cursor.execute("SELECT 1 FROM huespedes WHERE id = ?", (huesped_id,))
     return cursor.fetchone() is not None
