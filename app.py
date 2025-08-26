@@ -317,6 +317,8 @@ elif menu == "Agregar Cabaña":
             st.error("Nombre y capacidad válida son requeridos.")
 
 elif menu == "Hacer Reserva":
+    st.info("🔍 Verificá los días disponibles en la tabla antes de elegir fechas.")
+
     st.subheader("📅 Crear nueva reserva")
 
     huespedes = obtener_huespedes()
